@@ -1,0 +1,195 @@
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Cliente]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE Cliente
+    (
+        Email VARCHAR(50) PRIMARY KEY NOT NULL,
+        Nome VARCHAR(50),
+        Logotipo VARCHAR(50)
+    );
+END;
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Logradouro]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE Logradouro 
+    (
+        LogradouroId INTEGER IDENTITY(1,1) PRIMARY KEY,
+        LogradouroNome VARCHAR(50),
+        Email VARCHAR(50),
+        CONSTRAINT fk_CliLogradouro FOREIGN KEY (Email) REFERENCES Cliente (Email)
+    );
+END;
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Usuarios]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE Usuarios
+    (
+        ID INT PRIMARY KEY IDENTITY,
+        Username NVARCHAR(50) NOT NULL,
+        PasswordHash NVARCHAR(256) NOT NULL
+    );
+END;
+GO
+
+
+/*PROCEDURES*/
+
+/*CLIENTES*/
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'spAtualizarCliente')
+BEGIN
+    DROP PROCEDURE spAtualizarCliente;
+END;
+GO
+CREATE PROCEDURE spAtualizarCliente
+    @Nome NVARCHAR(100),
+    @Logotipo NVARCHAR(MAX),
+    @Email NVARCHAR(100)
+AS
+BEGIN
+    UPDATE Cliente
+    SET Nome = @Nome,
+        Logotipo = @Logotipo
+    WHERE Email = @Email;
+END;
+GO
+
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'spBuscarClientePorEmail')
+BEGIN
+    DROP PROCEDURE spBuscarClientePorEmail;
+END;
+GO
+CREATE PROCEDURE spBuscarClientePorEmail
+    @Email NVARCHAR(255)
+AS
+BEGIN
+    SELECT Nome, Email, Logotipo
+    FROM Cliente WITH (NOLOCK)
+    WHERE Email = @Email;
+END;
+GO
+
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'spInserirCliente')
+BEGIN
+    DROP PROCEDURE spInserirCliente;
+END;
+GO
+CREATE PROCEDURE spInserirCliente
+    @Nome NVARCHAR(100),
+    @Email NVARCHAR(100),
+    @Logotipo NVARCHAR(MAX)
+AS
+BEGIN
+    INSERT INTO Cliente (Nome, Email, Logotipo)
+    VALUES (@Nome, @Email, @Logotipo);
+END;
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'spRemoverCliente')
+BEGIN
+    DROP PROCEDURE spRemoverCliente;
+END;
+GO
+CREATE PROCEDURE spRemoverCliente
+    @Email NVARCHAR(100)
+AS
+BEGIN
+    DELETE FROM Cliente WHERE Email = @Email;
+END;
+GO
+
+
+/*LOGRADOURO*/
+
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'spAtualizarLogradouro')
+BEGIN
+    DROP PROCEDURE spAtualizarLogradouro;
+END;
+GO
+CREATE PROCEDURE spAtualizarLogradouro
+    @LogradouroNome NVARCHAR(MAX),
+    @Email NVARCHAR(100)
+AS
+BEGIN
+    UPDATE Logradouro
+    SET LogradouroNome = @LogradouroNome
+    WHERE Email = @Email;
+END;
+GO
+
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'spBuscarLogradouro')
+BEGIN
+    DROP PROCEDURE spBuscarLogradouro;
+END;
+GO
+CREATE PROCEDURE spBuscarLogradouro
+    @Email NVARCHAR(100),
+    @Logradouro NVARCHAR(MAX)
+AS
+BEGIN
+    SELECT LogradouroNome, Email
+    FROM Logradouro
+    WHERE Email = @Email AND LogradouroNome = @Logradouro;
+END;
+GO
+
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'spBuscarTodosLogradouros')
+BEGIN
+    DROP PROCEDURE spBuscarTodosLogradouros;
+END;
+GO
+CREATE PROCEDURE spBuscarTodosLogradouros
+    @Email NVARCHAR(100)
+AS
+BEGIN
+    SELECT LogradouroNome, Email
+    FROM Logradouro
+    WHERE Email = @Email;
+END;
+GO
+
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'spInserirLogradouro')
+BEGIN
+    DROP PROCEDURE spInserirLogradouro;
+END;
+GO
+CREATE PROCEDURE spInserirLogradouro
+    @LogradouroNome NVARCHAR(MAX),
+    @Email NVARCHAR(100)
+AS
+BEGIN
+    INSERT INTO Logradouro (LogradouroNome, Email)
+    VALUES (@LogradouroNome, @Email);
+END;
+GO
+
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'spRemoverLogradouro')
+BEGIN
+    DROP PROCEDURE spRemoverLogradouro;
+END;
+GO
+CREATE PROCEDURE spRemoverLogradouro
+    @Email NVARCHAR(100),
+    @LogradouroNome NVARCHAR(MAX)
+AS
+BEGIN
+    DELETE FROM Logradouro
+    WHERE Email = @Email AND LogradouroNome = @LogradouroNome;
+END;
+GO
+
+
+/*INSERTS*/
+
+IF NOT EXISTS (SELECT 1 FROM Usuarios WHERE Username = 'User')
+BEGIN
+    INSERT INTO Usuarios (Username, PasswordHash) VALUES ('User', '$2a$11$EnhrqEjHSDwDUh.1l6fOG.7DCSvrXtc6GAABXwNxqfXZsjsf5Fl2W');
+END;
